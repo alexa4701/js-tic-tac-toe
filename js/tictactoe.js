@@ -159,6 +159,11 @@
 
                 titleDOM.textContent = `${player.symbol} wins!`;
             },
+            resetTitle: function() {
+                let titleDOM = document.querySelector(elements.title);
+
+                titleDOM.textContent = `Tic Tac Toe!`;
+            },
             showTie: function() {
                 let titleDOM = document.querySelector(elements.title);
 
@@ -251,6 +256,7 @@
                 GameBoard.reset();
                 Display.clear();
                 Display.render();
+                Display.resetTitle();
             },
             getCurrentPlayer: function() {
                 return currentPlayer;

@@ -24,6 +24,12 @@
                 board.push(space('bottom', 'middle'));
                 board.push(space('bottom', 'right'));
             },
+            reset: function() {
+                board.forEach(space => {
+                    space.move = '';
+                    space.taken = false;
+                });
+            },
             getBoard: function() {
                 return board;
             },
@@ -87,7 +93,6 @@
                 if(!board[index].taken) {
                     board[index].taken = true;
                     board[index].move = symbol;
-                    console.log(board[index]);
                 }
             },
         }
@@ -97,7 +102,11 @@
     const Display = (function() {
         const elements = {
             board: '.board',
-            spaces: '.space'
+            spaces: '.space',
+            title: '.title h4',
+            resetButton: '.reset',
+            playerOneScore: '.player1 .score',
+            playerTwoScore: '.player2 .score',
         };
 
         function updateSpace(event) {
@@ -110,20 +119,25 @@
                 }
             }
         }
+
+        function resetBoard() {
+            Game.reset();
+        }
         
         return {
             render: function() {
                 let board = GameBoard.getBoard();
                 let boardDOM = document.querySelector(elements.board);
+                let resetButtonDOM = document.querySelector(elements.resetButton);
+
+                resetButtonDOM.addEventListener('click', resetBoard);
                 board.forEach((space, index) => {
-                    console.log(space);
                     let element = document.createElement('div');
                     element.classList.add('space');
                     element.classList.add(space.row);
                     element.classList.add(space.column);
                     element.setAttribute('data-index', index);
                     element.addEventListener('click', updateSpace);
-                    console.log(element);
                     boardDOM.appendChild(element);
                 });
             },
@@ -132,6 +146,23 @@
                 while(boardDOM.firstChild) {
                     boardDOM.removeChild(boardDOM.firstChild);
                 }
+            },
+            updateScores: function(score1, score2) {
+                let player1ScoreDOM = document.querySelector(elements.playerOneScore);
+                let player2ScoreDOM = document.querySelector(elements.playerTwoScore);
+
+                player1ScoreDOM.textContent = score1;
+                player2ScoreDOM.textContent = score2;
+            },
+            showWinner: function(player) {
+                let titleDOM = document.querySelector(elements.title);
+
+                titleDOM.textContent = `${player.symbol} wins!`;
+            },
+            showTie: function() {
+                let titleDOM = document.querySelector(elements.title);
+
+                titleDOM.textContent = `It's a tie!`;
             }
         };
     })();
@@ -141,11 +172,13 @@
     const Game = (function() {
         // Player factory function
         let player = function(symbol, id) {
-            return {symbol, id}
+            let score = 0;
+            return {symbol, id, score}
         };
 
         let players = [];
         let currentPlayer;
+        let winner;
         let gameOverFlag = false;
         let turnNumber = 1;
 
@@ -154,15 +187,15 @@
             let row = GameBoard.getRowByIndex(index);
             let diagonal1, diagonal2;
 
-            console.log({currentSymbol})
-
             // Check column for win
             if(column.every(space => space.move === currentSymbol)) {
+                winner = currentPlayer;
                 return true;
             }
 
             // Check row for win
             if(row.every(space => space.move === currentSymbol)) {
+                winner = currentPlayer;
                 return true;
             }
 
@@ -173,8 +206,10 @@
                     diagonal2 = GameBoard.getDiagonalCenter(2);
     
                     if(diagonal1.every(space => space.move === currentSymbol)) {
+                        winner = currentPlayer;
                         return true;
                     } else if(diagonal2.every(space => space.move === currentSymbol)) {
+                        winner = currentPlayer;
                         return true;
                     }
     
@@ -182,6 +217,7 @@
                     diagonal1 = GameBoard.getDiagonalByIndex(index);
     
                     if(diagonal1.every(space => space.move === currentSymbol)) {
+                        winner = currentPlayer;
                         return true;
                     }
                 }
@@ -189,7 +225,6 @@
 
             // Check for tie
             if(turnNumber >= 9) {
-                console.log("tie");
                 return true;
             }
 
@@ -207,7 +242,15 @@
                 players[0] = player('X', 0);
                 players[1] = player('O', 1);
                 currentPlayer = players[0];
-                console.log(currentPlayer);
+            },
+            reset: function() {
+                gameOverFlag = false;
+                turnNumber = 1;
+                winner = {};
+                currentPlayer = players[0];
+                GameBoard.reset();
+                Display.clear();
+                Display.render();
             },
             getCurrentPlayer: function() {
                 return currentPlayer;
@@ -220,11 +263,17 @@
                 GameBoard.updateSpace(index, currentPlayer.symbol);
                 gameOverFlag = checkForGameOver(index, currentPlayer.symbol);
 
-                console.log(gameOverFlag);
-
-                if(!gameOverFlag) {
+                if(gameOverFlag) {
+                    if(winner) {
+                        winner.score++;
+                        Display.updateScores(players[0].score, players[1].score);
+                        Display.showWinner(winner);
+                    }
+                    else {
+                        Display.showTie();
+                    }
+                } else {
                     turnNumber++;
-                    console.log(turnNumber);
                     // Switch active player
                     if (currentPlayer.id === 0) {
                         currentPlayer = players[1];

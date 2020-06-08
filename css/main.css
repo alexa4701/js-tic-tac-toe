@@ -6,18 +6,35 @@ body, html {
 
 .container {
     display: grid;
-    grid-template-rows: 50px 100px 1fr 100px;
+    grid-template-rows: 50px 100px 6fr 1fr 100px;
     grid-template-columns: 25% 1fr 25%;
     grid-template-areas:
         "header header header"
         ". title ."
         ". board ."
+        ". buttons ."
         "footer footer footer";
     height: 100%;
+    row-gap: 10px;
 }
 
 .header {
+    display: flex;
     grid-area: header;
+    font-size: 2em;
+    font-weight: 600;
+    justify-content: space-between;
+}
+
+.header .player1, .header .player2 {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    justify-items: center;
+    row-gap: 5px;
+}
+
+.player1 .name {
+    font-size: 1em;
 }
 
 .title {
@@ -39,12 +56,15 @@ body, html {
     grid-template-rows: repeat(3, 1fr);
     text-align: center;
     border: 5px solid black;
+    box-shadow: 11px 12px 15px 0px rgba(201,201,201,1);
 }
 
 .space {
+    display: grid;
     font-size: 7em;
     font-weight: 600;
-    line-height: 200%;
+    align-items: center;
+    cursor: default;
 }
 
 .space.left, .space.middle {
@@ -53,6 +73,28 @@ body, html {
 
 .space.top, .space.center {
     border-bottom: 5px solid black;
+}
+
+.buttons {
+    display: grid;
+    grid-area: buttons;
+    align-items: center;
+    justify-items: center;
+}
+
+.button {
+    display: grid;
+    font-size: 2em;
+    font-weight: 600;
+    padding: 10px 20px 10px 20px;
+    border-radius: 40px;
+    border: 5px solid black;
+    box-shadow: 11px 12px 15px 0px rgba(201,201,201,1);
+    cursor: default;
+}
+
+.button:hover {
+    transform: scale(1.10);
 }
 
 .footer {
